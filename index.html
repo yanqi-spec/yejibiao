@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>合作/非合作--小七</title>
+    <title>合作/非合作--小七 · 倍率佣金</title>
     <style>
         * {
             box-sizing: border-box;
@@ -266,7 +266,7 @@
             background: #fffefc;
         }
         .category-body.open {
-            max-height: 520px;
+            max-height: 620px;
             overflow-y: auto;
         }
         .category-body table {
@@ -317,6 +317,53 @@
             letter-spacing: 0.2px;
         }
 
+        /* 倍率输入控件样式 */
+        .multiplier-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fffaf3;
+            padding: 8px 14px;
+            border-radius: 40px;
+            border: 1px solid #e9ddcf;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .multiplier-box label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b4f36;
+            letter-spacing: 0.2px;
+        }
+        .multiplier-input {
+            width: 90px;
+            padding: 8px 14px;
+            border-radius: 40px;
+            border: 1px solid #d8cbbc;
+            background: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            color: #3a2e24;
+            transition: 0.2s;
+        }
+        .multiplier-input:focus {
+            outline: none;
+            border-color: #b08b67;
+            box-shadow: 0 0 0 3px rgba(176,139,103,0.2);
+        }
+        .calculated-salary {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c6e49;
+            background: #eef5ef;
+            padding: 8px 18px;
+            border-radius: 30px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
         .loading-overlay {
             display: none;
             position: fixed;
@@ -351,7 +398,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 友情链接样式 */
         .friend-link-footer {
             margin-top: 36px;
             padding-top: 20px;
@@ -393,7 +439,7 @@
     <div class="app" id="app">
         <h1>📊 合作品 · 非合作品--小七</h1>
         <div class="subhead">
-            上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong>，自动分列展示 <strong>销售额（预估计佣金额）</strong> 与 <strong>预估佣金</strong>
+            上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong>，自动分列展示 <strong>销售额（预估计佣金额）</strong> 与 <strong>预估佣金</strong>。合作品支持自定义倍率计算到手工资金额。
         </div>
 
         <div class="upload-grid">
@@ -441,7 +487,7 @@
         </div>
 
         <div style="margin-top:28px;font-size:13px;color:#6f7e8c;background:#f5f3ee;padding:12px 20px;border-radius:50px;display:inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
-            💡 点击分类标题展开/折叠 
+            💡 点击分类标题展开/折叠 · 合作品分类内可输入倍率
         </div>
 
         <!-- 友情链接 footer -->
@@ -484,6 +530,8 @@
             let orderData = [];
             let skuSet = new Set();
             let isAnalyzing = false;
+            // 用于保存每个合作分类的预估佣金总额，方便倍率计算
+            let coopCategoryCommissionMap = {};
 
             // ---------- 工具 ----------
             function fmt(v) {
@@ -509,8 +557,23 @@
                 return '其他';
             }
 
-            // 渲染分类折叠组
-            function renderCategoryGroups(container, items) {
+            // 计算并更新某个分类的到手工资金额 (倍率输入框触发)
+            function updateCategorySalary(category, container) {
+                const input = container.querySelector(`.multiplier-input[data-category="${CSS.escape(category)}"]`);
+                const salarySpan = container.querySelector(`.calculated-salary[data-category="${CSS.escape(category)}"]`);
+                if (!input || !salarySpan) return;
+                const baseCommission = coopCategoryCommissionMap[category] || 0;
+                const multiplier = parseFloat(input.value);
+                if (!isNaN(multiplier) && multiplier >= 0) {
+                    const calculated = baseCommission * multiplier;
+                    salarySpan.textContent = `到手工资金额: ¥${calculated.toFixed(2)}`;
+                } else {
+                    salarySpan.textContent = `到手工资金额: ¥0.00`;
+                }
+            }
+
+            // 渲染分类折叠组 (针对合作品增加倍率控件)
+            function renderCategoryGroups(container, items, isCoop = false) {
                 if (!items || items.length === 0) {
                     container.innerHTML = `<div class="empty-msg">🕊️ 暂无数据</div>`;
                     return;
@@ -530,12 +593,26 @@
                     const totalSales = rows.reduce((sum, r) => sum + (r.sales || 0), 0);
                     const totalComm = rows.reduce((sum, r) => sum + (r.commission || 0), 0);
                     const bodyId = `cat_${idx}_${Date.now()}_${Math.random().toString(36).substr(2,4)}`;
-                    html += `<div class="category-group">
+
+                    // 如果是合作品，记录该分类的佣金总额
+                    if (isCoop) {
+                        coopCategoryCommissionMap[cat] = totalComm;
+                    }
+
+                    html += `<div class="category-group" data-category-name="${escapeHtml(cat)}">
                         <div class="category-header" data-target="${bodyId}">
                             <span>📂 ${escapeHtml(cat)} <span class="mini-badge">${rows.length} 件</span></span>
                             <span class="cat-stats">销售额 ¥${fmt(totalSales)} &nbsp;|&nbsp; 佣金 ¥${fmt(totalComm)} <span class="arrow">▶</span></span>
                         </div>
                         <div class="category-body" id="${bodyId}">
+                            ${isCoop ? `
+                            <div style="background:#fcf8f3;border-bottom:1px solid #ece3d8;padding:12px 16px;">
+                                <div class="multiplier-box">
+                                    <label>✖️ 倍率:</label>
+                                    <input type="number" step="0.001" min="0" value="0" class="multiplier-input" data-category="${escapeHtml(cat)}" placeholder="例如 0.06">
+                                    <span class="calculated-salary" data-category="${escapeHtml(cat)}" style="margin-left:4px;">到手工资金额: ¥0.00</span>
+                                </div>
+                            </div>` : ''}
                             <table>
                                 <thead><tr>
                                     <th>商品ID</th>
@@ -561,10 +638,19 @@
 
                 container.innerHTML = html;
 
+                // 绑定折叠事件
                 container.querySelectorAll('.category-header').forEach(header => {
                     header.removeEventListener('click', handleCategoryToggle);
                     header.addEventListener('click', handleCategoryToggle);
                 });
+
+                // 绑定倍率输入事件 (仅合作品)
+                if (isCoop) {
+                    container.querySelectorAll('.multiplier-input').forEach(input => {
+                        input.removeEventListener('input', handleMultiplierInput);
+                        input.addEventListener('input', handleMultiplierInput);
+                    });
+                }
             }
 
             function handleCategoryToggle(e) {
@@ -578,11 +664,21 @@
                 if (arrow) arrow.textContent = isOpen ? '▶' : '▼';
             }
 
+            function handleMultiplierInput(e) {
+                const input = e.target;
+                const category = input.dataset.category;
+                const container = input.closest('.split-col') || input.closest('#coopContainer');
+                if (container) {
+                    updateCategorySalary(category, container);
+                }
+            }
+
             // ---------- 重置 ----------
             function resetAll() {
                 if (isAnalyzing) return;
                 orderData = [];
                 skuSet = new Set();
+                coopCategoryCommissionMap = {};
                 orderFileInput.value = '';
                 skuFileInput.value = '';
                 orderFileStatus.textContent = '未选择';
@@ -657,8 +753,9 @@
                         orderData.length
                     );
 
-                    renderCategoryGroups(coopContainer, coopItems);
-                    renderCategoryGroups(nonContainer, nonCoopItems);
+                    // 渲染合作品（带倍率功能）和非合作品
+                    renderCategoryGroups(coopContainer, coopItems, true);
+                    renderCategoryGroups(nonContainer, nonCoopItems, false);
 
                     fileStatus.innerText = `✅ 分析完成 · 合作 ${coopItems.length} · 非合作 ${nonCoopItems.length}`;
                 } catch (e) {
@@ -757,7 +854,7 @@
 
             // ---------- 初始化 ----------
             resetAll();
-            console.log('✅ 销售额+预估佣金（INS风·小七导航版）加载完成');
+            console.log('✅ 销售额+预估佣金（含倍率功能·INS风）加载完成');
         })();
     </script>
 </body>
