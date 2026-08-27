@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>合作/非合作--小七</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: #f5f5f0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+        }
+        .app {
+            max-width: 1500px;
+            width: 100%;
+            background: #fffffffc;
+            backdrop-filter: blur(2px);
+            border-radius: 40px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.03);
+            padding: 36px 38px 50px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            transition: all 0.25s ease;
+        }
+        h1 {
+            font-weight: 700;
+            font-size: 29px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #1e2b3a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+        .subhead {
+            color: #4a5c6e;
+            font-size: 15px;
+            margin-bottom: 28px;
+            border-left: 6px solid #d9a066;
+            padding-left: 18px;
+            background: #faf7f2;
+            border-radius: 0 20px 20px 0;
+            line-height: 1.7;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .upload-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px 32px;
+            background: #fcfcf8;
+            padding: 24px 28px;
+            border-radius: 30px;
+            margin-bottom: 28px;
+            border: 1px solid #eeeeea;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02);
+        }
+        .file-box {
+            flex: 1 1 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .file-box label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #2f3e4e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+        .file-box input[type="file"] {
+            background: #ffffff;
+            border: 2px solid #e6e2da;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #2e3b47;
+            transition: 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+        .file-box input[type="file"]:hover {
+            border-color: #c2a98b;
+            background: #fffdf9;
+            box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15);
+        }
+        .file-status {
+            font-size: 12px;
+            color: #8a9aa8;
+            letter-spacing: 0.2px;
+        }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px 24px;
+            margin: 8px 0 18px;
+        }
+        .btn {
+            background: #1f2a36;
+            border: none;
+            color: white;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 12px 32px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            box-shadow: 0 12px 22px -10px rgba(30, 40, 50, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: #2c3e50;
+            transform: translateY(-2px);
+            box-shadow: 0 18px 28px -12px rgba(20, 30, 40, 0.35);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #d6d0c4;
+            color: #3a4a5a;
+            box-shadow: none;
+            font-weight: 500;
+        }
+        .btn-outline:hover {
+            background: #faf6ef;
+            border-color: #b9a58d;
+            box-shadow: none;
+            transform: translateY(-2px);
+        }
+
+        .stats-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 30px;
+            background: #faf8f4;
+            border-radius: 30px;
+            padding: 22px 30px;
+            margin: 20px 0 28px;
+            border: 1px solid #edebe6;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.02);
+        }
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .stat-label {
+            font-weight: 500;
+            color: #4e5f70;
+            font-size: 14px;
+            letter-spacing: 0.2px;
+        }
+        .stat-number {
+            font-weight: 700;
+            font-size: 21px;
+            color: #1e2b3a;
+            letter-spacing: -0.3px;
+        }
+        .stat-number.gold { color: #b27d4c; }
+        .stat-number.blue { color: #4f7a9e; }
+        .stat-number.green { color: #4f8063; }
+        .stat-number.purple { color: #8f6b9e; }
+        .divider {
+            width: 1px;
+            background: #e0dbd2;
+            margin: 0 6px;
+        }
+
+        .split-container {
+            display: flex;
+            gap: 24px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .split-col {
+            flex: 1 1 45%;
+            min-width: 340px;
+            background: #fefefc;
+            border-radius: 28px;
+            border: 1px solid #efede8;
+            padding: 20px 20px 10px 20px;
+            box-shadow: 0 12px 26px -8px rgba(0,0,0,0.04);
+            transition: 0.2s;
+        }
+        .split-col h3 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0ede8;
+            flex-wrap: wrap;
+            letter-spacing: -0.2px;
+        }
+        .split-col h3 .badge-count {
+            font-size: 13px;
+            font-weight: 500;
+            color: #5a6978;
+            background: #f1efe9;
+            padding: 4px 16px;
+            border-radius: 30px;
+            line-height: 24px;
+        }
+        .col-coop h3 { color: #3e5f47; }
+        .col-non h3 { color: #7a5b5b; }
+
+        .category-group {
+            margin-bottom: 14px;
+            border-radius: 20px;
+            border: 1px solid #efede8;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+        .category-header {
+            background: #f9f8f5;
+            padding: 10px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: 0.15s;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+            letter-spacing: 0.2px;
+            color: #2f3e4e;
+        }
+        .category-header:hover {
+            background: #f3f1ec;
+        }
+        .category-header .arrow {
+            transition: transform 0.25s ease;
+            font-size: 13px;
+            color: #8b7f6b;
+        }
+        .category-header .arrow.open {
+            transform: rotate(90deg);
+        }
+        .category-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #fffefc;
+        }
+        .category-body.open {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        .category-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .category-body th {
+            background: #faf9f6;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e7e3dc;
+            font-weight: 600;
+            color: #46586a;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .category-body td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f2efe9;
+            color: #2f3e4e;
+        }
+        .category-body tr:last-child td {
+            border-bottom: none;
+        }
+        .empty-msg {
+            padding: 20px;
+            text-align: center;
+            color: #8a99a8;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+        .mini-badge {
+            background: #eae7df;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #4f5e6e;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .cat-stats {
+            font-size: 12px;
+            color: #6a7a88;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 243, 238, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 36px 56px;
+            border-radius: 40px;
+            text-align: center;
+            color: #1e2b3a;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+            border: 1px solid #ffffff;
+        }
+        .spinner {
+            border: 5px solid rgba(0,0,0,0.08);
+            border-top: 5px solid #b09b84;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 18px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 友情链接样式 */
+        .friend-link-footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid #ece9e2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #6f7e8c;
+        }
+        .friend-link-footer a {
+            color: #4f6d8a;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: 0.2s;
+            border-bottom: 1px dashed #b3a58d;
+        }
+        .friend-link-footer a:hover {
+            color: #2c3e50;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        @media (max-width: 800px) {
+            .split-col { flex: 1 1 100%; }
+            .app { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div id="loadingText" style="font-weight: 500; letter-spacing:0.5px;">正在处理...</div>
+        </div>
+    </div>
+
+    <div class="app" id="app">
+        <h1>📊 合作品 · 非合作品--小七</h1>
+        <div class="subhead">
+            上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong>，自动分列展示 <strong>销售额（预估计佣金额）</strong> 与 <strong>预估佣金</strong>
+        </div>
+
+        <div class="upload-grid">
+            <div class="file-box">
+                <label>📄 订单数据</label>
+                <input type="file" id="orderFile" accept=".xlsx,.xls" />
+                <span class="file-status" id="orderFileStatus">未选择</span>
+            </div>
+            <div class="file-box">
+                <label>📋 SKU白名单</label>
+                <input type="file" id="skuFile" accept=".xlsx,.xls" />
+                <span class="file-status" id="skuFileStatus">未选择</span>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn" id="analyzeBtn">✨ 分析</button>
+            <button class="btn btn-outline" id="resetBtn">⟳ 重置</button>
+            <span style="font-size:14px;color:#6a7c8b; margin-left:auto; letter-spacing:0.3px;" id="fileStatus">📎 请选择文件</span>
+        </div>
+
+        <!-- 统计面板 -->
+        <div class="stats-panel" id="statsPanel">
+            <div class="stat-item"><span class="stat-label">📦 合作品数量</span><span class="stat-number blue" id="coopQty">0</span></div>
+            <div class="stat-item"><span class="stat-label">💰 合作品销售额</span><span class="stat-number gold" id="coopSales">0.00</span></div>
+            <div class="stat-item"><span class="stat-label">📈 合作品预估佣金</span><span class="stat-number purple" id="coopCommission">0.00</span></div>
+            <div class="divider"></div>
+            <div class="stat-item"><span class="stat-label">📦 非合作品数量</span><span class="stat-number" id="nonCoopQty">0</span></div>
+            <div class="stat-item"><span class="stat-label">💰 非合作品销售额</span><span class="stat-number" id="nonCoopSales">0.00</span></div>
+            <div class="stat-item"><span class="stat-label">📈 非合作品预估佣金</span><span class="stat-number purple" id="nonCoopCommission">0.00</span></div>
+            <div class="divider"></div>
+            <div class="stat-item"><span class="stat-label">📋 总订单行</span><span class="stat-number" id="totalRows">0</span></div>
+        </div>
+
+        <!-- 左右列 -->
+        <div class="split-container">
+            <div class="split-col col-coop">
+                <h3>✅ 合作品 <span class="badge-count" id="coopBadge">0 件</span></h3>
+                <div id="coopContainer"></div>
+            </div>
+            <div class="split-col col-non">
+                <h3>⚪ 非合作品 <span class="badge-count" id="nonBadge">0 件</span></h3>
+                <div id="nonContainer"></div>
+            </div>
+        </div>
+
+        <div style="margin-top:28px;font-size:13px;color:#6f7e8c;background:#f5f3ee;padding:12px 20px;border-radius:50px;display:inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+            💡 点击分类标题展开/折叠 
+        </div>
+
+        <!-- 友情链接 footer -->
+        <div class="friend-link-footer">
+            <span>🔗</span>
+            <span>友情链接：</span>
+            <a href="https://yanqi-spec.github.io/daohanglaile/" target="_blank" rel="noopener noreferrer">小七导航</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js">
+    </script>
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- DOM ----------
+            const orderFileInput = document.getElementById('orderFile');
+            const skuFileInput = document.getElementById('skuFile');
+            const orderFileStatus = document.getElementById('orderFileStatus');
+            const skuFileStatus = document.getElementById('skuFileStatus');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const fileStatus = document.getElementById('fileStatus');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+
+            const coopQtyEl = document.getElementById('coopQty');
+            const coopSalesEl = document.getElementById('coopSales');
+            const coopCommissionEl = document.getElementById('coopCommission');
+            const nonCoopQtyEl = document.getElementById('nonCoopQty');
+            const nonCoopSalesEl = document.getElementById('nonCoopSales');
+            const nonCoopCommissionEl = document.getElementById('nonCoopCommission');
+            const totalRowsEl = document.getElementById('totalRows');
+            const coopBadge = document.getElementById('coopBadge');
+            const nonBadge = document.getElementById('nonBadge');
+            const coopContainer = document.getElementById('coopContainer');
+            const nonContainer = document.getElementById('nonContainer');
+
+            let orderData = [];
+            let skuSet = new Set();
+            let isAnalyzing = false;
+
+            // ---------- 工具 ----------
+            function fmt(v) {
+                if (v === undefined || v === null || isNaN(v)) return '0.00';
+                return Number(v).toFixed(2);
+            }
+            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+            function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+            function showLoading(msg) { loadingText.textContent = msg || '处理中...'; loadingOverlay.classList.add('active'); }
+            function hideLoading() { loadingOverlay.classList.remove('active'); }
+
+            // 提取分类关键词
+            function extractCategory(productName) {
+                if (!productName) return '其他';
+                const name = productName.trim();
+                const keywords = ['云鲸', '海尔', '科沃斯', '石头', '追觅', '小米', '添可', '美的', '西门子', '林内', '瓦克', '周大生', '国誉', '铁娃', '京东京造', '世达', '安踏', '飞科', '得力', '潜水艇', '宝克', '泓一', '金河', '杏花楼', 'ARSPURA', 'IMCAY'];
+                for (let kw of keywords) {
+                    if (name.includes(kw)) return kw;
+                }
+                const firstWord = name.split(/[ \-\(（]/)[0];
+                if (firstWord && firstWord.length > 1) return firstWord;
+                return '其他';
+            }
+
+            // 渲染分类折叠组
+            function renderCategoryGroups(container, items) {
+                if (!items || items.length === 0) {
+                    container.innerHTML = `<div class="empty-msg">🕊️ 暂无数据</div>`;
+                    return;
+                }
+
+                const groups = {};
+                items.forEach(item => {
+                    const cat = extractCategory(item.productName);
+                    if (!groups[cat]) groups[cat] = [];
+                    groups[cat].push(item);
+                });
+
+                const sortedCats = Object.keys(groups).sort();
+                let html = '';
+                sortedCats.forEach((cat, idx) => {
+                    const rows = groups[cat];
+                    const totalSales = rows.reduce((sum, r) => sum + (r.sales || 0), 0);
+                    const totalComm = rows.reduce((sum, r) => sum + (r.commission || 0), 0);
+                    const bodyId = `cat_${idx}_${Date.now()}_${Math.random().toString(36).substr(2,4)}`;
+                    html += `<div class="category-group">
+                        <div class="category-header" data-target="${bodyId}">
+                            <span>📂 ${escapeHtml(cat)} <span class="mini-badge">${rows.length} 件</span></span>
+                            <span class="cat-stats">销售额 ¥${fmt(totalSales)} &nbsp;|&nbsp; 佣金 ¥${fmt(totalComm)} <span class="arrow">▶</span></span>
+                        </div>
+                        <div class="category-body" id="${bodyId}">
+                            <table>
+                                <thead><tr>
+                                    <th>商品ID</th>
+                                    <th>商品名称</th>
+                                    <th>销售额</th>
+                                    <th>预估佣金</th>
+                                    <th>订单号</th>
+                                </tr></thead>
+                                <tbody>`;
+                    rows.forEach(r => {
+                        html += `<tr>
+                            <td><code style="background:#f2f0eb;padding:2px 10px;border-radius:20px;">${escapeHtml(r.productId)}</code></td>
+                            <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.productName)}">${escapeHtml(r.productName)}</td>
+                            <td><strong>${fmt(r.sales)}</strong></td>
+                            <td>${fmt(r.commission)}</td>
+                            <td style="font-size:12px;color:#5f7080;">${escapeHtml(r.orderId)}</td>
+                        </tr>`;
+                    });
+                    html += `</tbody></table>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+                container.querySelectorAll('.category-header').forEach(header => {
+                    header.removeEventListener('click', handleCategoryToggle);
+                    header.addEventListener('click', handleCategoryToggle);
+                });
+            }
+
+            function handleCategoryToggle(e) {
+                const header = e.currentTarget;
+                const targetId = header.dataset.target;
+                const body = document.getElementById(targetId);
+                if (!body) return;
+                const isOpen = body.classList.contains('open');
+                body.classList.toggle('open');
+                const arrow = header.querySelector('.arrow');
+                if (arrow) arrow.textContent = isOpen ? '▶' : '▼';
+            }
+
+            // ---------- 重置 ----------
+            function resetAll() {
+                if (isAnalyzing) return;
+                orderData = [];
+                skuSet = new Set();
+                orderFileInput.value = '';
+                skuFileInput.value = '';
+                orderFileStatus.textContent = '未选择';
+                skuFileStatus.textContent = '未选择';
+                fileStatus.innerText = '📎 请选择文件';
+                coopContainer.innerHTML = `<div class="empty-msg">🕊️ 暂无合作品数据</div>`;
+                nonContainer.innerHTML = `<div class="empty-msg">🕊️ 无非合作品数据</div>`;
+                coopBadge.textContent = '0 件';
+                nonBadge.textContent = '0 件';
+                updateStats(0, 0, 0, 0, 0, 0, 0);
+            }
+
+            function updateStats(cq, cs, cc, nq, ns, nc, total) {
+                coopQtyEl.innerText = cq;
+                coopSalesEl.innerText = fmt(cs);
+                coopCommissionEl.innerText = fmt(cc);
+                nonCoopQtyEl.innerText = nq;
+                nonCoopSalesEl.innerText = fmt(ns);
+                nonCoopCommissionEl.innerText = fmt(nc);
+                totalRowsEl.innerText = total;
+                coopBadge.textContent = `${cq} 件`;
+                nonBadge.textContent = `${nq} 件`;
+            }
+
+            // ---------- 核心分析 ----------
+            async function analyze() {
+                if (isAnalyzing) return;
+                if (orderData.length === 0) { alert('请先上传「订单数据」'); return; }
+                if (skuSet.size === 0) { alert('请先上传「SKU白名单」'); return; }
+
+                isAnalyzing = true;
+                analyzeBtn.disabled = true;
+                showLoading('分析数据中...');
+                await sleep(50);
+
+                try {
+                    const coopItems = [];
+                    const nonCoopItems = [];
+                    let coopSales = 0, coopComm = 0;
+                    let nonCoopSales = 0, nonCoopComm = 0;
+
+                    for (let i = 0; i < orderData.length; i++) {
+                        const row = orderData[i];
+                        const productId = String(row['商品ID'] || '').trim();
+                        const sales = parseFloat(row['预估计佣金额']) || 0;
+                        const commission = parseFloat(row['预估佣金']) || 0;
+                        const isCoop = productId !== '' && skuSet.has(productId);
+
+                        const item = {
+                            productId: productId || '-',
+                            productName: row['商品名称'] || '-',
+                            orderId: row['订单号'] || '-',
+                            sales: sales,
+                            commission: commission,
+                        };
+
+                        if (isCoop) {
+                            coopItems.push(item);
+                            coopSales += sales;
+                            coopComm += commission;
+                        } else {
+                            nonCoopItems.push(item);
+                            nonCoopSales += sales;
+                            nonCoopComm += commission;
+                        }
+                        if (i % 300 === 0 && i > 0) await sleep(0);
+                    }
+
+                    updateStats(
+                        coopItems.length, coopSales, coopComm,
+                        nonCoopItems.length, nonCoopSales, nonCoopComm,
+                        orderData.length
+                    );
+
+                    renderCategoryGroups(coopContainer, coopItems);
+                    renderCategoryGroups(nonContainer, nonCoopItems);
+
+                    fileStatus.innerText = `✅ 分析完成 · 合作 ${coopItems.length} · 非合作 ${nonCoopItems.length}`;
+                } catch (e) {
+                    console.error(e);
+                    alert('分析出错: ' + e.message);
+                } finally {
+                    hideLoading();
+                    isAnalyzing = false;
+                    analyzeBtn.disabled = false;
+                }
+            }
+
+            // ---------- 文件读取 ----------
+            function readFileAsArrayBuffer(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = e => reject(e);
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            function parseOrderExcel(data, maxRows = 50000) {
+                const wb = XLSX.read(data, { type: 'array', cellDates: false });
+                const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
+                if (!sheet) return [];
+                const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                return json.length > maxRows ? json.slice(0, maxRows) : json;
+            }
+
+            function parseSkuExcel(data) {
+                const wb = XLSX.read(data, { type: 'array', cellDates: false });
+                const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
+                if (!sheet) return new Set();
+                const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                const set = new Set();
+                json.forEach(r => {
+                    let id = r['商品id'] !== undefined ? String(r['商品id']).trim() :
+                             r['商品ID'] !== undefined ? String(r['商品ID']).trim() : '';
+                    if (id) set.add(id);
+                });
+                return set;
+            }
+
+            async function loadOrderFile(file) {
+                try {
+                    orderFileStatus.textContent = '⏳ 读取中...';
+                    const buf = await readFileAsArrayBuffer(file);
+                    showLoading('解析订单...');
+                    await sleep(50);
+                    orderData = parseOrderExcel(buf);
+                    hideLoading();
+                    orderFileStatus.textContent = `✅ ${orderData.length} 行`;
+                    fileStatus.innerText = `📎 订单: ${file.name} (${orderData.length}行)`;
+                    return orderData.length;
+                } catch (e) {
+                    console.error(e);
+                    hideLoading();
+                    orderFileStatus.textContent = '❌ 解析失败';
+                    alert('订单解析失败');
+                    return 0;
+                }
+            }
+
+            async function loadSkuFile(file) {
+                try {
+                    skuFileStatus.textContent = '⏳ 读取中...';
+                    const buf = await readFileAsArrayBuffer(file);
+                    showLoading('解析SKU...');
+                    await sleep(50);
+                    skuSet = parseSkuExcel(buf);
+                    hideLoading();
+                    skuFileStatus.textContent = `✅ ${skuSet.size} 个`;
+                    fileStatus.innerText = `📎 SKU: ${file.name} (${skuSet.size}个)`;
+                    return skuSet.size;
+                } catch (e) {
+                    console.error(e);
+                    hideLoading();
+                    skuFileStatus.textContent = '❌ 解析失败';
+                    alert('SKU解析失败');
+                    return 0;
+                }
+            }
+
+            // ---------- 事件绑定 ----------
+            orderFileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) await loadOrderFile(file);
+            });
+            skuFileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) await loadSkuFile(file);
+            });
+            analyzeBtn.addEventListener('click', analyze);
+            resetBtn.addEventListener('click', resetAll);
+
+            // ---------- 初始化 ----------
+            resetAll();
+            console.log('✅ 销售额+预估佣金（INS风·小七导航版）加载完成');
+        })();
+    </script>
+</body>
+</html>
