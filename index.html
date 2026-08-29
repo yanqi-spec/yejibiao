@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>合作/非合作--小七 · 倍率佣金</title>
+    <title>合作/非合作--小七 </title>
     <style>
         * {
             box-sizing: border-box;
@@ -144,7 +144,76 @@
             box-shadow: none;
             transform: translateY(-2px);
         }
-
+        .filter-section {
+            background: #fcfcf8;
+            border-radius: 28px;
+            padding: 18px 24px;
+            margin: 18px 0 22px;
+            border: 1px solid #efede8;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .filter-label {
+            font-weight: 600;
+            color: #3a4a5a;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        .people-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 18px;
+            align-items: center;
+        }
+        .person-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            padding: 6px 18px;
+            border-radius: 40px;
+            border: 1.5px solid #e2ded6;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2f3e4e;
+            user-select: none;
+            letter-spacing: 0.2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+        .person-check:hover {
+            border-color: #c2a98b;
+            background: #fffaf2;
+            box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15);
+        }
+        .person-check input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #b09b84;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .select-all-badge {
+            background: #f1ede6;
+            border-radius: 40px;
+            padding: 6px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4e5f6e;
+            cursor: pointer;
+            border: 1.5px dashed #c8bfb2;
+            transition: 0.2s;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .select-all-badge:hover {
+            background: #e7e1d7;
+            border-color: #a8977c;
+        }
         .stats-panel {
             display: flex;
             flex-wrap: wrap;
@@ -183,7 +252,6 @@
             background: #e0dbd2;
             margin: 0 6px;
         }
-
         .split-container {
             display: flex;
             gap: 24px;
@@ -223,7 +291,6 @@
         }
         .col-coop h3 { color: #3e5f47; }
         .col-non h3 { color: #7a5b5b; }
-
         .category-group {
             margin-bottom: 14px;
             border-radius: 20px;
@@ -316,8 +383,6 @@
             font-weight: 500;
             letter-spacing: 0.2px;
         }
-
-        /* 倍率输入控件样式 */
         .multiplier-box {
             display: flex;
             align-items: center;
@@ -363,7 +428,6 @@
             letter-spacing: 0.3px;
             white-space: nowrap;
         }
-
         .loading-overlay {
             display: none;
             position: fixed;
@@ -397,7 +461,6 @@
             margin: 0 auto 18px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .friend-link-footer {
             margin-top: 36px;
             padding-top: 20px;
@@ -421,7 +484,6 @@
             color: #2c3e50;
             border-bottom: 1px solid #2c3e50;
         }
-
         @media (max-width: 800px) {
             .split-col { flex: 1 1 100%; }
             .app { padding: 20px; }
@@ -453,6 +515,13 @@
                 <input type="file" id="skuFile" accept=".xlsx,.xls" />
                 <span class="file-status" id="skuFileStatus">未选择</span>
             </div>
+        </div>
+
+        <!-- 推广位名称筛选区域 -->
+        <div class="filter-section" id="promotionFilterSection">
+            <span class="filter-label">📢 推广位筛选</span>
+            <div class="people-selector" id="promotionSelector"></div>
+            <span class="select-all-badge" id="selectAllPromotionBadge">🔘 全部推广位</span>
         </div>
 
         <div class="action-bar">
@@ -526,12 +595,15 @@
             const nonBadge = document.getElementById('nonBadge');
             const coopContainer = document.getElementById('coopContainer');
             const nonContainer = document.getElementById('nonContainer');
+            const promotionSelector = document.getElementById('promotionSelector');
+            const selectAllPromotionBadge = document.getElementById('selectAllPromotionBadge');
 
             let orderData = [];
             let skuSet = new Set();
             let isAnalyzing = false;
-            // 用于保存每个合作分类的预估佣金总额，方便倍率计算
             let coopCategoryCommissionMap = {};
+            let availablePromotions = new Set(); // 所有推广位名称
+            let selectedPromotions = new Set();  // 选中的推广位名称（空表示全部）
 
             // ---------- 工具 ----------
             function fmt(v) {
@@ -557,7 +629,89 @@
                 return '其他';
             }
 
-            // 计算并更新某个分类的到手工资金额 (倍率输入框触发)
+            // 从订单数据中提取推广位名称 (基于“推广位名称”列)
+            function extractPromotionsFromOrder(data) {
+                const promotions = new Set();
+                if (!data || data.length === 0) return promotions;
+                const key = '推广位名称';
+                if (data[0].hasOwnProperty(key)) {
+                    data.forEach(row => {
+                        const val = row[key];
+                        if (val !== undefined && val !== null && String(val).trim() !== '') {
+                            promotions.add(String(val).trim());
+                        }
+                    });
+                }
+                return promotions;
+            }
+
+            // 渲染推广位复选框
+            function renderPromotionSelector() {
+                if (!promotionSelector) return;
+                availablePromotions = extractPromotionsFromOrder(orderData);
+                const promoArray = Array.from(availablePromotions).sort();
+                if (promoArray.length === 0) {
+                    promotionSelector.innerHTML = '<span style="color:#8a99a8; font-size:13px;">订单中未找到“推广位名称”列，默认全部</span>';
+                    selectedPromotions.clear();
+                    selectAllPromotionBadge.style.display = 'none';
+                    return;
+                }
+                selectAllPromotionBadge.style.display = 'inline-block';
+                let html = '';
+                promoArray.forEach(promo => {
+                    const isChecked = selectedPromotions.has(promo);
+                    html += `<label class="person-check">
+                        <input type="checkbox" value="${escapeHtml(promo)}" ${isChecked ? 'checked' : ''} />
+                        <span>${escapeHtml(promo)}</span>
+                    </label>`;
+                });
+                promotionSelector.innerHTML = html;
+
+                // 绑定复选框事件
+                promotionSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const val = e.target.value;
+                        if (e.target.checked) {
+                            selectedPromotions.add(val);
+                        } else {
+                            selectedPromotions.delete(val);
+                        }
+                        updateSelectAllPromotionBadgeText();
+                    });
+                });
+                updateSelectAllPromotionBadgeText();
+            }
+
+            function updateSelectAllPromotionBadgeText() {
+                if (selectedPromotions.size === 0 || selectedPromotions.size === availablePromotions.size) {
+                    selectAllPromotionBadge.textContent = '🔘 全部推广位';
+                } else {
+                    selectAllPromotionBadge.textContent = `📢 已选 ${selectedPromotions.size} 个`;
+                }
+            }
+
+            function resetPromotionSelection() {
+                selectedPromotions.clear();
+                if (availablePromotions.size > 0) {
+                    promotionSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.checked = false;
+                    });
+                    updateSelectAllPromotionBadgeText();
+                } else {
+                    renderPromotionSelector();
+                }
+            }
+
+            // 判断某行是否属于当前选中的推广位
+            function isRowSelectedByPromotion(row) {
+                if (selectedPromotions.size === 0) return true; // 空表示全部
+                const key = '推广位名称';
+                if (!row.hasOwnProperty(key)) return true; // 没有该列，视为全部
+                const val = String(row[key] || '').trim();
+                return selectedPromotions.has(val);
+            }
+
+            // 更新分类佣金映射及倍率计算
             function updateCategorySalary(category, container) {
                 const input = container.querySelector(`.multiplier-input[data-category="${CSS.escape(category)}"]`);
                 const salarySpan = container.querySelector(`.calculated-salary[data-category="${CSS.escape(category)}"]`);
@@ -572,7 +726,6 @@
                 }
             }
 
-            // 渲染分类折叠组 (针对合作品增加倍率控件)
             function renderCategoryGroups(container, items, isCoop = false) {
                 if (!items || items.length === 0) {
                     container.innerHTML = `<div class="empty-msg">🕊️ 暂无数据</div>`;
@@ -594,7 +747,6 @@
                     const totalComm = rows.reduce((sum, r) => sum + (r.commission || 0), 0);
                     const bodyId = `cat_${idx}_${Date.now()}_${Math.random().toString(36).substr(2,4)}`;
 
-                    // 如果是合作品，记录该分类的佣金总额
                     if (isCoop) {
                         coopCategoryCommissionMap[cat] = totalComm;
                     }
@@ -638,13 +790,11 @@
 
                 container.innerHTML = html;
 
-                // 绑定折叠事件
                 container.querySelectorAll('.category-header').forEach(header => {
                     header.removeEventListener('click', handleCategoryToggle);
                     header.addEventListener('click', handleCategoryToggle);
                 });
 
-                // 绑定倍率输入事件 (仅合作品)
                 if (isCoop) {
                     container.querySelectorAll('.multiplier-input').forEach(input => {
                         input.removeEventListener('input', handleMultiplierInput);
@@ -673,12 +823,13 @@
                 }
             }
 
-            // ---------- 重置 ----------
             function resetAll() {
                 if (isAnalyzing) return;
                 orderData = [];
                 skuSet = new Set();
                 coopCategoryCommissionMap = {};
+                availablePromotions.clear();
+                selectedPromotions.clear();
                 orderFileInput.value = '';
                 skuFileInput.value = '';
                 orderFileStatus.textContent = '未选择';
@@ -689,6 +840,7 @@
                 coopBadge.textContent = '0 件';
                 nonBadge.textContent = '0 件';
                 updateStats(0, 0, 0, 0, 0, 0, 0);
+                renderPromotionSelector();
             }
 
             function updateStats(cq, cs, cc, nq, ns, nc, total) {
@@ -703,7 +855,6 @@
                 nonBadge.textContent = `${nq} 件`;
             }
 
-            // ---------- 核心分析 ----------
             async function analyze() {
                 if (isAnalyzing) return;
                 if (orderData.length === 0) { alert('请先上传「订单数据」'); return; }
@@ -722,6 +873,8 @@
 
                     for (let i = 0; i < orderData.length; i++) {
                         const row = orderData[i];
+                        if (!isRowSelectedByPromotion(row)) continue; // 推广位筛选
+
                         const productId = String(row['商品ID'] || '').trim();
                         const sales = parseFloat(row['预估计佣金额']) || 0;
                         const commission = parseFloat(row['预估佣金']) || 0;
@@ -753,7 +906,6 @@
                         orderData.length
                     );
 
-                    // 渲染合作品（带倍率功能）和非合作品
                     renderCategoryGroups(coopContainer, coopItems, true);
                     renderCategoryGroups(nonContainer, nonCoopItems, false);
 
@@ -768,7 +920,6 @@
                 }
             }
 
-            // ---------- 文件读取 ----------
             function readFileAsArrayBuffer(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -810,6 +961,7 @@
                     hideLoading();
                     orderFileStatus.textContent = `✅ ${orderData.length} 行`;
                     fileStatus.innerText = `📎 订单: ${file.name} (${orderData.length}行)`;
+                    renderPromotionSelector();
                     return orderData.length;
                 } catch (e) {
                     console.error(e);
@@ -840,7 +992,7 @@
                 }
             }
 
-            // ---------- 事件绑定 ----------
+            // 事件绑定
             orderFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) await loadOrderFile(file);
@@ -852,9 +1004,22 @@
             analyzeBtn.addEventListener('click', analyze);
             resetBtn.addEventListener('click', resetAll);
 
-            // ---------- 初始化 ----------
+            // 全选/全不选（推广位）
+            selectAllPromotionBadge.addEventListener('click', () => {
+                if (selectedPromotions.size === availablePromotions.size || selectedPromotions.size === 0) {
+                    selectedPromotions.clear();
+                    promotionSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                } else {
+                    selectedPromotions.clear();
+                    availablePromotions.forEach(p => selectedPromotions.add(p));
+                    promotionSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                }
+                updateSelectAllPromotionBadgeText();
+            });
+
+            // 初始化
             resetAll();
-            console.log('✅ 销售额+预估佣金（含倍率功能·INS风）加载完成');
+            console.log('✅ 销售额+预估佣金（含倍率·推广位筛选·INS风）加载完成');
         })();
     </script>
 </body>
