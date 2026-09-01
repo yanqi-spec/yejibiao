@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>合作/非合作 · 小七</title>
+    <title>合作/非合作 · 小七 </title>
     <style>
         * {
             box-sizing: border-box;
@@ -599,10 +599,8 @@
     </div>
 
     <div class="app" id="app">
-        <h1>📊 合作品 · 非合作品--小七 (百分比版)</h1>
-        <div class="subhead">
-            请上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong> 
-        </div>
+        <h1>📊 合作品 · 非合作品--小七</h1>
+
 
         <div class="upload-grid">
             <div class="file-box">
@@ -624,7 +622,7 @@
         </div>
 
         <div class="ratio-filter-section" id="ratioFilterSection" style="display:none;">
-            <span class="filter-label">🧮 分成比例（选中=合作品，未选=非合作品）</span>
+            <span class="filter-label">🧮 分成比例叠加筛选（不选=显示全部匹配SKU）</span>
             <div class="ratio-selector" id="ratioSelector"></div>
             <span class="select-all-badge" id="selectAllRatioBadge">🔘 全部比例</span>
         </div>
@@ -649,7 +647,7 @@
 
         <div class="split-container">
             <div class="split-col col-coop">
-                <h3>✅ 合作品（选中比例）<span class="badge-count" id="coopBadge">0 件</span></h3>
+                <h3>✅ 合作品（SKU匹配）<span class="badge-count" id="coopBadge">0 件</span></h3>
                 <div class="salary-summary-row" style="margin-bottom:18px;">
                     <span class="salary-summary-item">🧾 到手工资已计总和：</span>
                     <span class="salary-summary-value" id="coopSalaryTotal">¥0.00</span>
@@ -657,7 +655,7 @@
                 <div id="coopContainer"></div>
             </div>
             <div class="split-col col-non">
-                <h3>⚪ 非合作品（未选比例）<span class="badge-count" id="nonBadge">0 件</span></h3>
+                <h3>⚪ 非合作品（未匹配SKU）<span class="badge-count" id="nonBadge">0 件</span></h3>
                 <div class="salary-summary-row" style="margin-bottom:18px; background:#faf2f2; border-color:#ecdcdc;">
                     <span class="salary-summary-item">📐 总佣金倍率：</span>
                     <input type="number" step="0.001" min="0" value="0" class="non-multiplier-input" id="nonCoopMultiplierInput" placeholder="输入总倍率">
@@ -667,8 +665,6 @@
             </div>
         </div>
 
-  
-
         <div class="friend-link-footer">
             <span>🔗</span>
             <span>友情链接：</span>
@@ -676,11 +672,22 @@
         </div>
     </div>
 
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        // 检查XLSX是否加载成功
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');
+        }
     </script>
     <script>
         (function() {
             'use strict';
+
+            if (typeof XLSX === 'undefined') {
+                console.error('XLSX库加载失败');
+                alert('Excel解析库加载失败，请刷新页面重试');
+                return;
+            }
 
             const orderFileInput = document.getElementById('orderFile');
             const skuFileInput = document.getElementById('skuFile');
@@ -719,9 +726,8 @@
             let availablePromotions = new Set();
             let selectedPromotions = new Set();
             let availableRatios = new Set();
-            let selectedRatios = new Set();
+            let selectedRatios = new Set(); // 空表示不筛选比例，显示全部
             let skuRatioMap = new Map();
-
             let currentNonCoopTotalCommission = 0;
 
             function fmt(v) {
@@ -750,7 +756,7 @@
                 const promotions = new Set();
                 if (!data || data.length === 0) return promotions;
                 const key = '推广位名称';
-                if (data[0].hasOwnProperty(key)) {
+                if (data[0] && data[0].hasOwnProperty(key)) {
                     data.forEach(row => {
                         const val = row[key];
                         if (val !== undefined && val !== null && String(val).trim() !== '') {
@@ -759,6 +765,26 @@
                     });
                 }
                 return promotions;
+            }
+
+            function normalizePercentage(value) {
+                if (value === undefined || value === null) return null;
+                let str = String(value).trim();
+                if (str === '') return null;
+                if (str.endsWith('%')) {
+                    return str;
+                }
+                const num = parseFloat(str);
+                if (!isNaN(num)) {
+                    if (num > 0 && num <= 1) {
+                        return (num * 100) + '%';
+                    } else if (num > 1) {
+                        return num + '%';
+                    } else {
+                        return '0%';
+                    }
+                }
+                return str;
             }
 
             function extractRatiosFromOrder(data) {
@@ -791,28 +817,19 @@
                 }
 
                 data.forEach(row => {
-                    let ratioStr = null;
+                    let ratioValue = null;
                     if (ratioKey && row[ratioKey] !== undefined && row[ratioKey] !== null && String(row[ratioKey]).trim() !== '') {
-                        ratioStr = String(row[ratioKey]).trim();
-                        // 如果包含百分号，去除百分号并转为数值再存为带%的字符串
-                        if (ratioStr.endsWith('%')) {
-                            ratioStr = ratioStr.slice(0, -1).trim();
+                        ratioValue = normalizePercentage(row[ratioKey]);
+                        if (ratioValue) {
+                            ratios.add(ratioValue);
                         }
-                        // 尝试转换为数字百分比形式
-                        const num = parseFloat(ratioStr);
-                        if (!isNaN(num)) {
-                            ratioStr = num + '%';
-                        } else {
-                            ratioStr = String(row[ratioKey]).trim(); // 保留原始
-                        }
-                        ratios.add(ratioStr);
                     }
                     let skuVal = null;
                     if (skuKey && row[skuKey] !== undefined && row[skuKey] !== null && String(row[skuKey]).trim() !== '') {
                         skuVal = String(row[skuKey]).trim();
                     }
-                    if (skuVal && ratioStr !== null) {
-                        skuMap.set(skuVal, ratioStr);
+                    if (skuVal && ratioValue) {
+                        skuMap.set(skuVal, ratioValue);
                     }
                 });
                 return { ratios, skuMap };
@@ -850,7 +867,11 @@
             }
 
             function renderRatioSelector() {
-                const ratioArray = Array.from(availableRatios).sort((a,b) => parseFloat(a) - parseFloat(b));
+                const ratioArray = Array.from(availableRatios).sort((a,b) => {
+                    const numA = parseFloat(a);
+                    const numB = parseFloat(b);
+                    return numA - numB;
+                });
                 if (ratioArray.length === 0) {
                     ratioFilterSection.style.display = 'none';
                     selectedRatios.clear();
@@ -886,7 +907,9 @@
                 }
             }
             function updateSelectAllRatioBadgeText() {
-                if (selectedRatios.size === 0 || selectedRatios.size === availableRatios.size) {
+                if (selectedRatios.size === 0) {
+                    selectAllRatioBadge.textContent = '🔘 不筛选比例';
+                } else if (selectedRatios.size === availableRatios.size) {
                     selectAllRatioBadge.textContent = '🔘 全部比例';
                 } else {
                     selectAllRatioBadge.textContent = `🧮 已选 ${selectedRatios.size} 个`;
@@ -902,8 +925,10 @@
             function isCoopProduct(row) {
                 const productId = String(row['商品ID'] || row['商品id'] || row['SKU'] || row['sku'] || '').trim();
                 if (productId === '' || !skuSet.has(productId)) return false;
+                // 如果selectedRatios为空，表示不筛选比例，所有匹配SKU的都是合作品
+                if (selectedRatios.size === 0) return true;
                 const ratioStr = skuRatioMap.get(productId);
-                if (ratioStr === undefined) return false;
+                if (ratioStr === undefined) return true; // 没有比例信息的也归为合作品
                 return selectedRatios.has(ratioStr);
             }
             function getRatioDisplay(productId) {
@@ -1146,7 +1171,8 @@
                     const { ratios, skuMap } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
                     skuRatioMap = skuMap;
-                    selectedRatios = new Set(availableRatios);
+                    // 默认不筛选比例，selectedRatios保持为空
+                    selectedRatios.clear();
                     renderRatioSelector();
                     reanalyze();
                 } catch (e) {
@@ -1168,27 +1194,45 @@
                 });
             }
 
-            function parseOrderExcel(data, maxRows = 50000) {
-                const wb = XLSX.read(data, { type: 'array', cellDates: false });
-                const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
-                if (!sheet) return [];
-                const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                return json.length > maxRows ? json.slice(0, maxRows) : json;
+            function parseOrderExcel(data) {
+                try {
+                    const wb = XLSX.read(data, { type: 'array', cellDates: false });
+                    const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
+                    if (!sheet) {
+                        console.error('未找到工作表');
+                        return [];
+                    }
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    console.log('解析订单成功，行数:', json.length);
+                    return json;
+                } catch (e) {
+                    console.error('解析订单Excel失败:', e);
+                    throw e;
+                }
             }
 
             function parseSkuExcel(data) {
-                const wb = XLSX.read(data, { type: 'array', cellDates: false });
-                const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
-                if (!sheet) return new Set();
-                const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                const set = new Set();
-                json.forEach(r => {
-                    let id = r['商品id'] !== undefined ? String(r['商品id']).trim() :
-                             r['商品ID'] !== undefined ? String(r['商品ID']).trim() :
-                             r['SKU'] !== undefined ? String(r['SKU']).trim() : '';
-                    if (id) set.add(id);
-                });
-                return set;
+                try {
+                    const wb = XLSX.read(data, { type: 'array', cellDates: false });
+                    const sheet = wb.Sheets['Sheet1'] || wb.Sheets[wb.SheetNames[0]];
+                    if (!sheet) {
+                        console.error('未找到工作表');
+                        return new Set();
+                    }
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    const set = new Set();
+                    json.forEach(r => {
+                        let id = r['商品id'] !== undefined ? String(r['商品id']).trim() :
+                                 r['商品ID'] !== undefined ? String(r['商品ID']).trim() :
+                                 r['SKU'] !== undefined ? String(r['SKU']).trim() : '';
+                        if (id) set.add(id);
+                    });
+                    console.log('解析SKU成功，数量:', set.size);
+                    return set;
+                } catch (e) {
+                    console.error('解析SKU Excel失败:', e);
+                    throw e;
+                }
             }
 
             async function loadOrderFile(file) {
@@ -1204,15 +1248,19 @@
                     const { ratios, skuMap } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
                     skuRatioMap = skuMap;
-                    selectedRatios = new Set(availableRatios);
+                    selectedRatios.clear();
                     renderPromotionSelector();
                     renderRatioSelector();
+                    // 如果SKU已加载，自动分析
+                    if (skuSet.size > 0) {
+                        await analyze();
+                    }
                     return orderData.length;
                 } catch (e) {
-                    console.error(e);
+                    console.error('加载订单文件失败:', e);
                     hideLoading();
                     orderFileStatus.textContent = '❌ 解析失败';
-                    alert('订单解析失败');
+                    alert('订单解析失败: ' + e.message);
                     return 0;
                 }
             }
@@ -1227,12 +1275,16 @@
                     hideLoading();
                     skuFileStatus.textContent = `✅ ${skuSet.size} 个`;
                     fileStatus.innerText = `📎 SKU: ${file.name} (${skuSet.size}个)`;
+                    // 如果订单已加载，自动分析
+                    if (orderData.length > 0) {
+                        await analyze();
+                    }
                     return skuSet.size;
                 } catch (e) {
-                    console.error(e);
+                    console.error('加载SKU文件失败:', e);
                     hideLoading();
                     skuFileStatus.textContent = '❌ 解析失败';
-                    alert('SKU解析失败');
+                    alert('SKU解析失败: ' + e.message);
                     return 0;
                 }
             }
@@ -1262,13 +1314,15 @@
             });
 
             selectAllRatioBadge.addEventListener('click', () => {
-                if (selectedRatios.size === availableRatios.size || selectedRatios.size === 0) {
-                    selectedRatios.clear();
-                    ratioSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                } else {
+                if (selectedRatios.size === 0) {
+                    // 从不筛选变为全选
                     selectedRatios.clear();
                     availableRatios.forEach(r => selectedRatios.add(r));
                     ratioSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                } else {
+                    // 从有选择变为不筛选
+                    selectedRatios.clear();
+                    ratioSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
                 }
                 updateSelectAllRatioBadgeText();
                 if (orderData.length > 0 && skuSet.size > 0) reanalyze();
@@ -1277,7 +1331,7 @@
             nonCoopMultiplierInput.addEventListener('input', updateNonCoopMultiplierResult);
 
             resetAll();
-            console.log('✅ 百分比比例内容 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
+            console.log('✅ SKU自动匹配 · 比例叠加筛选 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
         })();
     </script>
 </body>
