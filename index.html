@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>合作/非合作 · 小七 · 原始比例 · 手动倍率</title>
+    <title>合作/非合作 · 小七</title>
     <style>
         * {
             box-sizing: border-box;
@@ -599,9 +599,9 @@
     </div>
 
     <div class="app" id="app">
-        <h1>📊 合作品 · 非合作品--小七</h1>
+        <h1>📊 合作品 · 非合作品--小七 (百分比版)</h1>
         <div class="subhead">
-            请上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong>
+            请上传 <strong>订单明细</strong> 与 <strong>SKU白名单</strong> 
         </div>
 
         <div class="upload-grid">
@@ -794,6 +794,17 @@
                     let ratioStr = null;
                     if (ratioKey && row[ratioKey] !== undefined && row[ratioKey] !== null && String(row[ratioKey]).trim() !== '') {
                         ratioStr = String(row[ratioKey]).trim();
+                        // 如果包含百分号，去除百分号并转为数值再存为带%的字符串
+                        if (ratioStr.endsWith('%')) {
+                            ratioStr = ratioStr.slice(0, -1).trim();
+                        }
+                        // 尝试转换为数字百分比形式
+                        const num = parseFloat(ratioStr);
+                        if (!isNaN(num)) {
+                            ratioStr = num + '%';
+                        } else {
+                            ratioStr = String(row[ratioKey]).trim(); // 保留原始
+                        }
                         ratios.add(ratioStr);
                     }
                     let skuVal = null;
@@ -839,7 +850,7 @@
             }
 
             function renderRatioSelector() {
-                const ratioArray = Array.from(availableRatios).sort();
+                const ratioArray = Array.from(availableRatios).sort((a,b) => parseFloat(a) - parseFloat(b));
                 if (ratioArray.length === 0) {
                     ratioFilterSection.style.display = 'none';
                     selectedRatios.clear();
@@ -1266,7 +1277,7 @@
             nonCoopMultiplierInput.addEventListener('input', updateNonCoopMultiplierResult);
 
             resetAll();
-            console.log('✅ 原始比例内容 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
+            console.log('✅ 百分比比例内容 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
         })();
     </script>
 </body>
