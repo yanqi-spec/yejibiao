@@ -5,589 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>合作/非合作 · 小七 </title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        body {
-            background: #f5f5f0;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 24px;
-        }
-        .app {
-            max-width: 1500px;
-            width: 100%;
-            background: #fffffffc;
-            backdrop-filter: blur(2px);
-            border-radius: 40px;
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.03);
-            padding: 36px 38px 50px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            transition: all 0.25s ease;
-        }
-        h1 {
-            font-weight: 700;
-            font-size: 29px;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #1e2b3a;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.5px;
-        }
-        .subhead {
-            color: #4a5c6e;
-            font-size: 15px;
-            margin-bottom: 28px;
-            border-left: 6px solid #d9a066;
-            padding-left: 18px;
-            background: #faf7f2;
-            border-radius: 0 20px 20px 0;
-            line-height: 1.7;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
-        }
-        .upload-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 22px 32px;
-            background: #fcfcf8;
-            padding: 24px 28px;
-            border-radius: 30px;
-            margin-bottom: 28px;
-            border: 1px solid #eeeeea;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02);
-        }
-        .file-box {
-            flex: 1 1 260px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .file-box label {
-            font-weight: 600;
-            font-size: 14px;
-            color: #2f3e4e;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.3px;
-        }
-        .file-box input[type="file"] {
-            background: #ffffff;
-            border: 2px solid #e6e2da;
-            border-radius: 50px;
-            padding: 12px 20px;
-            font-size: 14px;
-            color: #2e3b47;
-            transition: 0.2s ease;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-        .file-box input[type="file"]:hover {
-            border-color: #c2a98b;
-            background: #fffdf9;
-            box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15);
-        }
-        .file-status {
-            font-size: 12px;
-            color: #8a9aa8;
-            letter-spacing: 0.2px;
-        }
-        .action-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 18px 24px;
-            margin: 8px 0 18px;
-        }
-        .btn {
-            background: #1f2a36;
-            border: none;
-            color: white;
-            font-weight: 500;
-            font-size: 15px;
-            padding: 12px 32px;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: 0.25s ease;
-            box-shadow: 0 12px 22px -10px rgba(30, 40, 50, 0.25);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.3px;
-        }
-        .btn:hover {
-            background: #2c3e50;
-            transform: translateY(-2px);
-            box-shadow: 0 18px 28px -12px rgba(20, 30, 40, 0.35);
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #d6d0c4;
-            color: #3a4a5a;
-            box-shadow: none;
-            font-weight: 500;
-        }
-        .btn-outline:hover {
-            background: #faf6ef;
-            border-color: #b9a58d;
-            box-shadow: none;
-            transform: translateY(-2px);
-        }
-        .filter-section {
-            background: #fcfcf8;
-            border-radius: 28px;
-            padding: 18px 24px;
-            margin: 18px 0 22px;
-            border: 1px solid #efede8;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 16px 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-        }
-        .filter-label {
-            font-weight: 600;
-            color: #3a4a5a;
-            font-size: 14px;
-            letter-spacing: 0.3px;
-        }
-        .people-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 18px;
-            align-items: center;
-        }
-        .person-check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #ffffff;
-            padding: 6px 18px;
-            border-radius: 40px;
-            border: 1.5px solid #e2ded6;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 14px;
-            font-weight: 500;
-            color: #2f3e4e;
-            user-select: none;
-            letter-spacing: 0.2px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
-        }
-        .person-check:hover {
-            border-color: #c2a98b;
-            background: #fffaf2;
-            box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15);
-        }
-        .person-check input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #b09b84;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .select-all-badge {
-            background: #f1ede6;
-            border-radius: 40px;
-            padding: 6px 22px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #4e5f6e;
-            cursor: pointer;
-            border: 1.5px dashed #c8bfb2;
-            transition: 0.2s;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .select-all-badge:hover {
-            background: #e7e1d7;
-            border-color: #a8977c;
-        }
-        .ratio-filter-section {
-            background: #fcfcf8;
-            border-radius: 28px;
-            padding: 18px 24px;
-            margin: 12px 0 22px;
-            border: 1px solid #efede8;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 16px 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-        }
-        .ratio-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 14px;
-            align-items: center;
-        }
-        .ratio-check {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #ffffff;
-            padding: 6px 18px;
-            border-radius: 40px;
-            border: 1.5px solid #e2ded6;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 14px;
-            font-weight: 500;
-            color: #2f3e4e;
-            user-select: none;
-            letter-spacing: 0.2px;
-        }
-        .ratio-check:hover {
-            border-color: #c2a98b;
-            background: #fffaf2;
-        }
-        .ratio-check input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #b09b84;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .stats-panel {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px 30px;
-            background: #faf8f4;
-            border-radius: 30px;
-            padding: 22px 30px;
-            margin: 20px 0 28px;
-            border: 1px solid #edebe6;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.02);
-        }
-        .stat-item {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .stat-label {
-            font-weight: 500;
-            color: #4e5f70;
-            font-size: 14px;
-            letter-spacing: 0.2px;
-        }
-        .stat-number {
-            font-weight: 700;
-            font-size: 21px;
-            color: #1e2b3a;
-            letter-spacing: -0.3px;
-        }
-        .stat-number.gold { color: #b27d4c; }
-        .stat-number.blue { color: #4f7a9e; }
-        .stat-number.green { color: #4f8063; }
-        .stat-number.purple { color: #8f6b9e; }
-        .divider {
-            width: 1px;
-            background: #e0dbd2;
-            margin: 0 6px;
-        }
-        .split-container {
-            display: flex;
-            gap: 24px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-        }
-        .split-col {
-            flex: 1 1 45%;
-            min-width: 340px;
-            background: #fefefc;
-            border-radius: 28px;
-            border: 1px solid #efede8;
-            padding: 20px 20px 10px 20px;
-            box-shadow: 0 12px 26px -8px rgba(0,0,0,0.04);
-            transition: 0.2s;
-        }
-        .split-col h3 {
-            margin: 0 0 16px 0;
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f0ede8;
-            flex-wrap: wrap;
-            letter-spacing: -0.2px;
-        }
-        .split-col h3 .badge-count {
-            font-size: 13px;
-            font-weight: 500;
-            color: #5a6978;
-            background: #f1efe9;
-            padding: 4px 16px;
-            border-radius: 30px;
-            line-height: 24px;
-        }
-        .col-coop h3 { color: #3e5f47; }
-        .col-non h3 { color: #7a5b5b; }
-        .category-group {
-            margin-bottom: 14px;
-            border-radius: 20px;
-            border: 1px solid #efede8;
-            background: #ffffff;
-            overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
-        }
-        .category-header {
-            background: #f9f8f5;
-            padding: 10px 18px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-            transition: 0.15s;
-            font-size: 14px;
-            flex-wrap: wrap;
-            gap: 8px;
-            letter-spacing: 0.2px;
-            color: #2f3e4e;
-        }
-        .category-header:hover {
-            background: #f3f1ec;
-        }
-        .category-header .arrow {
-            transition: transform 0.25s ease;
-            font-size: 13px;
-            color: #8b7f6b;
-        }
-        .category-header .arrow.open {
-            transform: rotate(90deg);
-        }
-        .category-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: #fffefc;
-        }
-        .category-body.open {
-            max-height: 700px;
-            overflow-y: auto;
-        }
-        .category-body table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        .category-body th {
-            background: #faf9f6;
-            padding: 8px 12px;
-            text-align: left;
-            border-bottom: 1px solid #e7e3dc;
-            font-weight: 600;
-            color: #46586a;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-        .category-body td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f2efe9;
-            color: #2f3e4e;
-        }
-        .category-body tr:last-child td {
-            border-bottom: none;
-        }
-        .empty-msg {
-            padding: 20px;
-            text-align: center;
-            color: #8a99a8;
-            font-style: italic;
-            letter-spacing: 0.5px;
-        }
-        .mini-badge {
-            background: #eae7df;
-            border-radius: 30px;
-            padding: 2px 12px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #4f5e6e;
-            display: inline-block;
-            margin-left: 8px;
-        }
-        .cat-stats {
-            font-size: 12px;
-            color: #6a7a88;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-        }
-        .multiplier-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #fffaf3;
-            padding: 8px 14px;
-            border-radius: 40px;
-            border: 1px solid #e9ddcf;
-            margin-top: 8px;
-            flex-wrap: wrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-        .multiplier-box label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #6b4f36;
-            letter-spacing: 0.2px;
-        }
-        .multiplier-input {
-            width: 90px;
-            padding: 8px 14px;
-            border-radius: 40px;
-            border: 1px solid #d8cbbc;
-            background: white;
-            font-weight: 600;
-            font-size: 14px;
-            text-align: center;
-            color: #3a2e24;
-            transition: 0.2s;
-        }
-        .multiplier-input:focus {
-            outline: none;
-            border-color: #b08b67;
-            box-shadow: 0 0 0 3px rgba(176,139,103,0.2);
-        }
-        .calculated-salary {
-            font-size: 14px;
-            font-weight: 700;
-            color: #2c6e49;
-            background: #eef5ef;
-            padding: 8px 18px;
-            border-radius: 30px;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(245, 243, 238, 0.7);
-            backdrop-filter: blur(6px);
-            z-index: 999;
-            justify-content: center;
-            align-items: center;
-        }
+        /* 样式保持不变 */
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #f5f5f0; margin: 0; min-height: 100vh; display: flex; justify-content: center; padding: 24px; }
+        .app { max-width: 1500px; width: 100%; background: #fffffffc; backdrop-filter: blur(2px); border-radius: 40px; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.03); padding: 36px 38px 50px; border: 1px solid rgba(255, 255, 255, 0.7); transition: all 0.25s ease; }
+        h1 { font-weight: 700; font-size: 29px; margin-top: 0; margin-bottom: 10px; color: #1e2b3a; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+        .upload-grid { display: flex; flex-wrap: wrap; gap: 22px 32px; background: #fcfcf8; padding: 24px 28px; border-radius: 30px; margin-bottom: 28px; border: 1px solid #eeeeea; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02); }
+        .file-box { flex: 1 1 260px; display: flex; flex-direction: column; gap: 8px; }
+        .file-box label { font-weight: 600; font-size: 14px; color: #2f3e4e; display: flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
+        .file-box input[type="file"] { background: #ffffff; border: 2px solid #e6e2da; border-radius: 50px; padding: 12px 20px; font-size: 14px; color: #2e3b47; transition: 0.2s ease; cursor: pointer; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); }
+        .file-box input[type="file"]:hover { border-color: #c2a98b; background: #fffdf9; box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15); }
+        .file-status { font-size: 12px; color: #8a9aa8; letter-spacing: 0.2px; }
+        .action-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 24px; margin: 8px 0 18px; }
+        .btn { background: #1f2a36; border: none; color: white; font-weight: 500; font-size: 15px; padding: 12px 32px; border-radius: 60px; cursor: pointer; transition: 0.25s ease; box-shadow: 0 12px 22px -10px rgba(30, 40, 50, 0.25); display: inline-flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
+        .btn:hover { background: #2c3e50; transform: translateY(-2px); box-shadow: 0 18px 28px -12px rgba(20, 30, 40, 0.35); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-outline { background: transparent; border: 2px solid #d6d0c4; color: #3a4a5a; box-shadow: none; font-weight: 500; }
+        .btn-outline:hover { background: #faf6ef; border-color: #b9a58d; box-shadow: none; transform: translateY(-2px); }
+        .filter-section { background: #fcfcf8; border-radius: 28px; padding: 18px 24px; margin: 18px 0 22px; border: 1px solid #efede8; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }
+        .filter-label { font-weight: 600; color: #3a4a5a; font-size: 14px; letter-spacing: 0.3px; }
+        .people-selector { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+        .person-check { display: flex; align-items: center; gap: 8px; background: #ffffff; padding: 6px 18px; border-radius: 40px; border: 1.5px solid #e2ded6; cursor: pointer; transition: 0.2s; font-size: 14px; font-weight: 500; color: #2f3e4e; user-select: none; letter-spacing: 0.2px; box-shadow: 0 2px 6px rgba(0,0,0,0.01); }
+        .person-check:hover { border-color: #c2a98b; background: #fffaf2; box-shadow: 0 8px 16px -8px rgba(90, 70, 50, 0.15); }
+        .person-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #b09b84; border-radius: 6px; cursor: pointer; }
+        .select-all-badge { background: #f1ede6; border-radius: 40px; padding: 6px 22px; font-size: 13px; font-weight: 600; color: #4e5f6e; cursor: pointer; border: 1.5px dashed #c8bfb2; transition: 0.2s; letter-spacing: 0.5px; white-space: nowrap; }
+        .select-all-badge:hover { background: #e7e1d7; border-color: #a8977c; }
+        .ratio-filter-section { background: #fcfcf8; border-radius: 28px; padding: 18px 24px; margin: 12px 0 22px; border: 1px solid #efede8; display: none; flex-wrap: wrap; align-items: center; gap: 16px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }
+        .ratio-selector { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+        .ratio-check { display: flex; align-items: center; gap: 6px; background: #ffffff; padding: 6px 18px; border-radius: 40px; border: 1.5px solid #e2ded6; cursor: pointer; transition: 0.2s; font-size: 14px; font-weight: 500; color: #2f3e4e; user-select: none; letter-spacing: 0.2px; }
+        .ratio-check:hover { border-color: #c2a98b; background: #fffaf2; }
+        .ratio-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #b09b84; border-radius: 6px; cursor: pointer; }
+        .stats-panel { display: flex; flex-wrap: wrap; gap: 18px 30px; background: #faf8f4; border-radius: 30px; padding: 22px 30px; margin: 20px 0 28px; border: 1px solid #edebe6; box-shadow: 0 6px 14px rgba(0,0,0,0.02); }
+        .stat-item { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .stat-label { font-weight: 500; color: #4e5f70; font-size: 14px; letter-spacing: 0.2px; }
+        .stat-number { font-weight: 700; font-size: 21px; color: #1e2b3a; letter-spacing: -0.3px; }
+        .stat-number.gold { color: #b27d4c; } .stat-number.blue { color: #4f7a9e; } .stat-number.green { color: #4f8063; } .stat-number.purple { color: #8f6b9e; }
+        .divider { width: 1px; background: #e0dbd2; margin: 0 6px; }
+        .split-container { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; }
+        .split-col { flex: 1 1 45%; min-width: 340px; background: #fefefc; border-radius: 28px; border: 1px solid #efede8; padding: 20px 20px 10px 20px; box-shadow: 0 12px 26px -8px rgba(0,0,0,0.04); transition: 0.2s; }
+        .split-col h3 { margin: 0 0 16px 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 2px solid #f0ede8; flex-wrap: wrap; letter-spacing: -0.2px; }
+        .split-col h3 .badge-count { font-size: 13px; font-weight: 500; color: #5a6978; background: #f1efe9; padding: 4px 16px; border-radius: 30px; line-height: 24px; }
+        .col-coop h3 { color: #3e5f47; } .col-non h3 { color: #7a5b5b; }
+        .category-group { margin-bottom: 14px; border-radius: 20px; border: 1px solid #efede8; background: #ffffff; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.01); }
+        .category-header { background: #f9f8f5; padding: 10px 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: 0.15s; font-size: 14px; flex-wrap: wrap; gap: 8px; letter-spacing: 0.2px; color: #2f3e4e; }
+        .category-header:hover { background: #f3f1ec; }
+        .category-header .arrow { transition: transform 0.25s ease; font-size: 13px; color: #8b7f6b; }
+        .category-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #fffefc; }
+        .category-body.open { max-height: 700px; overflow-y: auto; }
+        .category-body table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .category-body th { background: #faf9f6; padding: 8px 12px; text-align: left; border-bottom: 1px solid #e7e3dc; font-weight: 600; color: #46586a; position: sticky; top: 0; z-index: 2; }
+        .category-body td { padding: 8px 12px; border-bottom: 1px solid #f2efe9; color: #2f3e4e; }
+        .category-body tr:last-child td { border-bottom: none; }
+        .empty-msg { padding: 20px; text-align: center; color: #8a99a8; font-style: italic; letter-spacing: 0.5px; }
+        .mini-badge { background: #eae7df; border-radius: 30px; padding: 2px 12px; font-size: 11px; font-weight: 600; color: #4f5e6e; display: inline-block; margin-left: 8px; }
+        .cat-stats { font-size: 12px; color: #6a7a88; font-weight: 500; letter-spacing: 0.2px; }
+        .multiplier-box { display: flex; align-items: center; gap: 8px; background: #fffaf3; padding: 8px 14px; border-radius: 40px; border: 1px solid #e9ddcf; margin-top: 8px; flex-wrap: wrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .multiplier-box label { font-size: 13px; font-weight: 600; color: #6b4f36; letter-spacing: 0.2px; }
+        .multiplier-input { width: 90px; padding: 8px 14px; border-radius: 40px; border: 1px solid #d8cbbc; background: white; font-weight: 600; font-size: 14px; text-align: center; color: #3a2e24; transition: 0.2s; }
+        .multiplier-input:focus { outline: none; border-color: #b08b67; box-shadow: 0 0 0 3px rgba(176,139,103,0.2); }
+        .calculated-salary { font-size: 14px; font-weight: 700; color: #2c6e49; background: #eef5ef; padding: 8px 18px; border-radius: 30px; letter-spacing: 0.3px; white-space: nowrap; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(245, 243, 238, 0.7); backdrop-filter: blur(6px); z-index: 999; justify-content: center; align-items: center; }
         .loading-overlay.active { display: flex; }
-        .loading-box {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 36px 56px;
-            border-radius: 40px;
-            text-align: center;
-            color: #1e2b3a;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
-            border: 1px solid #ffffff;
-        }
-        .spinner {
-            border: 5px solid rgba(0,0,0,0.08);
-            border-top: 5px solid #b09b84;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 18px;
-        }
+        .loading-box { background: rgba(255, 255, 255, 0.9); padding: 36px 56px; border-radius: 40px; text-align: center; color: #1e2b3a; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); border: 1px solid #ffffff; }
+        .spinner { border: 5px solid rgba(0,0,0,0.08); border-top: 5px solid #b09b84; border-radius: 50%; width: 48px; height: 48px; animation: spin 0.8s linear infinite; margin: 0 auto 18px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .friend-link-footer {
-            margin-top: 36px;
-            padding-top: 20px;
-            border-top: 1px solid #ece9e2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #6f7e8c;
-        }
-        .friend-link-footer a {
-            color: #4f6d8a;
-            text-decoration: none;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: 0.2s;
-            border-bottom: 1px dashed #b3a58d;
-        }
-        .friend-link-footer a:hover {
-            color: #2c3e50;
-            border-bottom: 1px solid #2c3e50;
-        }
-        .salary-summary-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 16px;
-            background: #f9f6ee;
-            border-radius: 60px;
-            padding: 12px 22px;
-            margin-top: 10px;
-            border: 1px solid #e8ddcc;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-        .salary-summary-item {
-            font-weight: 600;
-            font-size: 15px;
-            color: #3f4a54;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .salary-summary-value {
-            font-weight: 800;
-            color: #2c6e49;
-            background: white;
-            padding: 4px 20px;
-            border-radius: 40px;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
-        }
-        .non-multiplier-input {
-            width: 110px;
-            padding: 8px 14px;
-            border-radius: 40px;
-            border: 1px solid #d8cbbc;
-            background: white;
-            font-weight: 600;
-            font-size: 14px;
-            text-align: center;
-            color: #3a2e24;
-            transition: 0.2s;
-        }
-        .non-multiplier-input:focus {
-            outline: none;
-            border-color: #b08b67;
-            box-shadow: 0 0 0 3px rgba(176,139,103,0.2);
-        }
-        .non-salary-result {
-            font-size: 14px;
-            font-weight: 700;
-            color: #7a5b5b;
-            background: #f5eeee;
-            padding: 8px 18px;
-            border-radius: 30px;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-        @media (max-width: 800px) {
-            .split-col { flex: 1 1 100%; }
-            .app { padding: 20px; }
-        }
+        .friend-link-footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid #ece9e2; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; color: #6f7e8c; }
+        .friend-link-footer a { color: #4f6d8a; text-decoration: none; font-weight: 600; letter-spacing: 0.5px; transition: 0.2s; border-bottom: 1px dashed #b3a58d; }
+        .friend-link-footer a:hover { color: #2c3e50; border-bottom: 1px solid #2c3e50; }
+        .salary-summary-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; background: #f9f6ee; border-radius: 60px; padding: 12px 22px; margin-top: 10px; border: 1px solid #e8ddcc; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .salary-summary-item { font-weight: 600; font-size: 15px; color: #3f4a54; display: flex; align-items: center; gap: 8px; }
+        .salary-summary-value { font-weight: 800; color: #2c6e49; background: white; padding: 4px 20px; border-radius: 40px; box-shadow: inset 0 1px 4px rgba(0,0,0,0.04); }
+        .non-multiplier-input { width: 110px; padding: 8px 14px; border-radius: 40px; border: 1px solid #d8cbbc; background: white; font-weight: 600; font-size: 14px; text-align: center; color: #3a2e24; transition: 0.2s; }
+        .non-multiplier-input:focus { outline: none; border-color: #b08b67; box-shadow: 0 0 0 3px rgba(176,139,103,0.2); }
+        .non-salary-result { font-size: 14px; font-weight: 700; color: #7a5b5b; background: #f5eeee; padding: 8px 18px; border-radius: 30px; letter-spacing: 0.3px; white-space: nowrap; }
+        @media (max-width: 800px) { .split-col { flex: 1 1 100%; } .app { padding: 20px; } }
     </style>
 </head>
 <body>
@@ -620,10 +111,10 @@
             <span class="select-all-badge" id="selectAllPromotionBadge">🔘 全部推广位</span>
         </div>
 
-        <div class="ratio-filter-section" id="ratioFilterSection" style="display:none;">
-            <span class="filter-label">🧮 分成比例叠加筛选（不选=显示全部匹配SKU）</span>
+        <div class="ratio-filter-section" id="ratioFilterSection">
+            <span class="filter-label">🧮 分成比例筛选（不选=显示全部匹配SKU）</span>
             <div class="ratio-selector" id="ratioSelector"></div>
-            <span class="select-all-badge" id="selectAllRatioBadge">🔘 全部比例</span>
+            <span class="select-all-badge" id="selectAllRatioBadge">🔘 不筛选比例</span>
         </div>
 
         <div class="action-bar">
@@ -673,21 +164,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-        // 检查XLSX是否加载成功
-        if (typeof XLSX === 'undefined') {
-            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');
-        }
-    </script>
-    <script>
         (function() {
             'use strict';
 
             if (typeof XLSX === 'undefined') {
-                console.error('XLSX库加载失败');
                 alert('Excel解析库加载失败，请刷新页面重试');
                 return;
             }
 
+            // DOM元素
             const orderFileInput = document.getElementById('orderFile');
             const skuFileInput = document.getElementById('skuFile');
             const orderFileStatus = document.getElementById('orderFileStatus');
@@ -697,7 +182,6 @@
             const fileStatus = document.getElementById('fileStatus');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
-
             const coopQtyEl = document.getElementById('coopQty');
             const coopSalesEl = document.getElementById('coopSales');
             const coopCommissionEl = document.getElementById('coopCommission');
@@ -725,22 +209,13 @@
             let availablePromotions = new Set();
             let selectedPromotions = new Set();
             let availableRatios = new Set();
-            let selectedRatios = new Set(); // 空表示不筛选比例，显示全部
-            let ratioKeyFound = null; // 记录实际找到的分成比例列名
+            let selectedRatios = new Set(); // 空表示不筛选比例
+            let ratioKeyFound = null;
             let currentNonCoopTotalCommission = 0;
 
-            function fmt(v) {
-                if (v === undefined || v === null || isNaN(v)) return '0.00';
-                return Number(v).toFixed(2);
-            }
+            function fmt(v) { if (v === undefined || v === null || isNaN(v)) return '0.00'; return Number(v).toFixed(2); }
             function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-            function escapeHtml(t) { 
-                if (!t) return ''; 
-                const d = document.createElement('div'); 
-                d.textContent = t; 
-                return d.innerHTML; 
-            }
-
+            function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
             function showLoading(msg) { loadingText.textContent = msg || '处理中...'; loadingOverlay.classList.add('active'); }
             function hideLoading() { loadingOverlay.classList.remove('active'); }
 
@@ -748,9 +223,7 @@
                 if (!productName) return '其他';
                 const name = productName.trim();
                 const keywords = ['云鲸', '海尔', '科沃斯', '石头', '追觅', '小米', '添可', '美的', '西门子', '林内', '瓦克', '周大生', '国誉', '铁娃', '京东京造', '世达', '安踏', '飞科', '得力', '潜水艇', '宝克', '泓一', '金河', '杏花楼', 'ARSPURA', 'IMCAY'];
-                for (let kw of keywords) {
-                    if (name.includes(kw)) return kw;
-                }
+                for (let kw of keywords) { if (name.includes(kw)) return kw; }
                 const firstWord = name.split(/[ \-\(（]/)[0];
                 if (firstWord && firstWord.length > 1) return firstWord;
                 return '其他';
@@ -763,63 +236,84 @@
                 if (data[0] && data[0].hasOwnProperty(key)) {
                     data.forEach(row => {
                         const val = row[key];
-                        if (val !== undefined && val !== null && String(val).trim() !== '') {
-                            promotions.add(String(val).trim());
-                        }
+                        if (val !== undefined && val !== null && String(val).trim() !== '') promotions.add(String(val).trim());
                     });
                 }
                 return promotions;
             }
 
-            // 查找分成比例列名
+            // ★ 修复1：更精确地识别“分成比例”列
             function findRatioColumn(data) {
                 if (!data || data.length === 0) return null;
                 const firstRow = data[0];
                 const allKeys = Object.keys(firstRow);
-                
-                // 精确匹配优先
-                const exactMatches = ['分成比例', '分成', '比例', '佣金比例'];
-                for (const key of exactMatches) {
-                    if (firstRow.hasOwnProperty(key)) return key;
-                }
-                
-                // 模糊匹配
-                const fuzzyMatch = allKeys.find(k => 
-                    k.includes('分成') || 
-                    k.includes('比例') || 
-                    k.toLowerCase().includes('ratio') ||
-                    k.toLowerCase().includes('commission')
-                );
-                return fuzzyMatch || null;
+
+                let matched = allKeys.find(k => k.includes('分成') && k.includes('比例'));
+                if (matched) return matched;
+
+                matched = allKeys.find(k => k.includes('分成') && !k.includes('佣金'));
+                if (matched) return matched;
+
+                matched = allKeys.find(k => k.includes('比例') && !k.includes('佣金') && !k.includes('金额'));
+                if (matched) return matched;
+
+                matched = allKeys.find(k => {
+                    const lower = k.toLowerCase();
+                    return (lower.includes('ratio') || lower.includes('percentage') || lower.includes('split')) &&
+                           !lower.includes('commission') && !lower.includes('amount');
+                });
+                if (matched) return matched;
+
+                matched = allKeys.find(k => k.includes('分成') || k.includes('比例'));
+                if (matched) return matched;
+
+                return null;
             }
 
-            // 直接读取分成比例原始值，不做任何转换
+            // ★ 修复2：智能转换比例值为百分比字符串
+            function convertRatioValue(val) {
+                if (typeof val === 'number') {
+                    // 数值型：如果是0到1之间（含1），视为小数百分比，乘以100并加%
+                    if (val >= 0 && val <= 1) {
+                        // 去掉多余的小数位，例如0.9 -> 90，1 -> 100
+                        return (val * 100) + '%';
+                    }
+                    // 如果大于1且小于等于100，视为已经是百分数数值，直接加%
+                    else if (val > 1 && val <= 100) {
+                        return val + '%';
+                    }
+                    // 其他数值，原样转字符串
+                    return String(val);
+                }
+                // 字符串或其它类型，原样返回
+                return String(val).trim();
+            }
+
+            // 获取比例显示值（应用转换）
             function getRawRatioValue(row, ratioKey) {
                 if (!ratioKey || !row.hasOwnProperty(ratioKey)) return null;
                 const val = row[ratioKey];
                 if (val === undefined || val === null || String(val).trim() === '') return null;
-                return String(val).trim();
+                return convertRatioValue(val);
             }
 
             function extractRatiosFromOrder(data) {
                 const ratios = new Set();
                 if (!data || data.length === 0) return { ratios, ratioKey: null };
-                
+
                 const ratioKey = findRatioColumn(data);
                 if (!ratioKey) {
                     console.warn('未找到分成比例列');
                     return { ratios, ratioKey: null };
                 }
-                
+
                 data.forEach(row => {
                     const val = getRawRatioValue(row, ratioKey);
-                    if (val) {
-                        ratios.add(val);
-                    }
+                    if (val) ratios.add(val);
                 });
-                
-                console.log('找到分成比例列:', ratioKey);
-                console.log('所有比例值:', Array.from(ratios));
+
+                console.log('✅ 识别到的分成比例列名:', ratioKey);
+                console.log('✅ 提取到的所有比例值:', Array.from(ratios));
                 return { ratios, ratioKey };
             }
 
@@ -855,10 +349,9 @@
             }
 
             function renderRatioSelector() {
-                const ratioArray = Array.from(availableRatios).sort((a,b) => {
-                    // 提取数字进行排序，但保留原始显示
-                    const numA = parseFloat(a.replace('%', '')) || 0;
-                    const numB = parseFloat(b.replace('%', '')) || 0;
+                const ratioArray = Array.from(availableRatios).sort((a, b) => {
+                    const numA = parseFloat(String(a).replace(/[%％]/g, '')) || 0;
+                    const numB = parseFloat(String(b).replace(/[%％]/g, '')) || 0;
                     return numA - numB;
                 });
                 if (ratioArray.length === 0) {
@@ -895,6 +388,7 @@
                     selectAllPromotionBadge.textContent = `📢 已选 ${selectedPromotions.size} 个`;
                 }
             }
+
             function updateSelectAllRatioBadgeText() {
                 if (selectedRatios.size === 0) {
                     selectAllRatioBadge.textContent = '🔘 不筛选比例';
@@ -904,6 +398,7 @@
                     selectAllRatioBadge.textContent = `🧮 已选 ${selectedRatios.size} 个`;
                 }
             }
+
             function isRowSelectedByPromotion(row) {
                 if (selectedPromotions.size === 0) return true;
                 const key = '推广位名称';
@@ -911,18 +406,16 @@
                 const val = String(row[key] || '').trim();
                 return selectedPromotions.has(val);
             }
-            
+
             function isCoopProduct(row) {
                 const productId = String(row['商品ID'] || row['商品id'] || row['SKU'] || row['sku'] || '').trim();
                 if (productId === '' || !skuSet.has(productId)) return false;
-                // 如果selectedRatios为空，表示不筛选比例，所有匹配SKU的都是合作品
                 if (selectedRatios.size === 0) return true;
-                // 直接读取该行的比例值
                 const ratioStr = getRawRatioValue(row, ratioKeyFound);
-                if (ratioStr === null) return true; // 没有比例信息的也归为合作品
+                if (ratioStr === null) return false;
                 return selectedRatios.has(ratioStr);
             }
-            
+
             function getRatioDisplay(row) {
                 const ratioStr = getRawRatioValue(row, ratioKeyFound);
                 return ratioStr === null ? '-' : ratioStr;
@@ -1093,6 +586,7 @@
                 coopSalaryTotalEl.textContent = '¥0.00';
                 nonCoopMultiplierInput.value = '0';
                 nonCoopMultiplierResult.textContent = '总佣金 × 倍率 = ¥0.00';
+                ratioFilterSection.style.display = 'none';
                 renderPromotionSelector();
                 renderRatioSelector();
             }
@@ -1121,11 +615,12 @@
 
                 for (const row of orderData) {
                     if (!isRowSelectedByPromotion(row)) continue;
+
                     const productId = String(row['商品ID'] || row['商品id'] || row['SKU'] || row['sku'] || '').trim();
                     const sales = parseFloat(row['预估计佣金额']) || 0;
                     const commission = parseFloat(row['预估佣金']) || 0;
                     const ratioDisplay = getRatioDisplay(row);
-                    
+
                     const item = {
                         productId: productId || '-',
                         productName: row['商品名称'] || '-',
@@ -1134,7 +629,7 @@
                         commission: commission,
                         ratioDisplay: ratioDisplay
                     };
-                    
+
                     const isCoop = isCoopProduct(row);
                     if (isCoop) {
                         coopItems.push(item);
@@ -1166,7 +661,6 @@
                     const { ratios, ratioKey } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
                     ratioKeyFound = ratioKey;
-                    // 默认不筛选比例，selectedRatios保持为空
                     selectedRatios.clear();
                     renderRatioSelector();
                     reanalyze();
@@ -1241,15 +735,15 @@
                     hideLoading();
                     orderFileStatus.textContent = `✅ ${orderData.length} 行`;
                     fileStatus.innerText = `📎 订单: ${file.name} (${orderData.length}行)`;
-                    
+
                     const { ratios, ratioKey } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
                     ratioKeyFound = ratioKey;
                     selectedRatios.clear();
+
                     renderPromotionSelector();
                     renderRatioSelector();
-                    
-                    // 如果SKU已加载，自动分析
+
                     if (skuSet.size > 0) {
                         await analyze();
                     }
@@ -1273,8 +767,7 @@
                     hideLoading();
                     skuFileStatus.textContent = `✅ ${skuSet.size} 个`;
                     fileStatus.innerText = `📎 SKU: ${file.name} (${skuSet.size}个)`;
-                    
-                    // 如果订单已加载，自动分析
+
                     if (orderData.length > 0) {
                         await analyze();
                     }
@@ -1292,10 +785,12 @@
                 const file = e.target.files[0];
                 if (file) await loadOrderFile(file);
             });
+
             skuFileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) await loadSkuFile(file);
             });
+
             analyzeBtn.addEventListener('click', analyze);
             resetBtn.addEventListener('click', resetAll);
 
@@ -1314,12 +809,10 @@
 
             selectAllRatioBadge.addEventListener('click', () => {
                 if (selectedRatios.size === 0) {
-                    // 从不筛选变为全选
                     selectedRatios.clear();
                     availableRatios.forEach(r => selectedRatios.add(r));
                     ratioSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
                 } else {
-                    // 从有选择变为不筛选
                     selectedRatios.clear();
                     ratioSelector.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
                 }
@@ -1330,7 +823,7 @@
             nonCoopMultiplierInput.addEventListener('input', updateNonCoopMultiplierResult);
 
             resetAll();
-            console.log('✅ SKU自动匹配 · 比例原始显示 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
+            console.log('✅ 修复完成：分成比例显示为百分比字符串');
         })();
     </script>
 </body>
