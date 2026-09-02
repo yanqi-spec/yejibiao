@@ -601,7 +601,6 @@
     <div class="app" id="app">
         <h1>📊 合作品 · 非合作品--小七</h1>
 
-
         <div class="upload-grid">
             <div class="file-box">
                 <label>📄 订单数据</label>
@@ -727,7 +726,7 @@
             let selectedPromotions = new Set();
             let availableRatios = new Set();
             let selectedRatios = new Set(); // 空表示不筛选比例，显示全部
-            let skuRatioMap = new Map();
+            let ratioKeyFound = null; // 记录实际找到的分成比例列名
             let currentNonCoopTotalCommission = 0;
 
             function fmt(v) {
@@ -735,7 +734,12 @@
                 return Number(v).toFixed(2);
             }
             function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-            function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+            function escapeHtml(t) { 
+                if (!t) return ''; 
+                const d = document.createElement('div'); 
+                d.textContent = t; 
+                return d.innerHTML; 
+            }
 
             function showLoading(msg) { loadingText.textContent = msg || '处理中...'; loadingOverlay.classList.add('active'); }
             function hideLoading() { loadingOverlay.classList.remove('active'); }
@@ -767,72 +771,56 @@
                 return promotions;
             }
 
-            function normalizePercentage(value) {
-                if (value === undefined || value === null) return null;
-                let str = String(value).trim();
-                if (str === '') return null;
-                if (str.endsWith('%')) {
-                    return str;
+            // 查找分成比例列名
+            function findRatioColumn(data) {
+                if (!data || data.length === 0) return null;
+                const firstRow = data[0];
+                const allKeys = Object.keys(firstRow);
+                
+                // 精确匹配优先
+                const exactMatches = ['分成比例', '分成', '比例', '佣金比例'];
+                for (const key of exactMatches) {
+                    if (firstRow.hasOwnProperty(key)) return key;
                 }
-                const num = parseFloat(str);
-                if (!isNaN(num)) {
-                    if (num > 0 && num <= 1) {
-                        return (num * 100) + '%';
-                    } else if (num > 1) {
-                        return num + '%';
-                    } else {
-                        return '0%';
-                    }
-                }
-                return str;
+                
+                // 模糊匹配
+                const fuzzyMatch = allKeys.find(k => 
+                    k.includes('分成') || 
+                    k.includes('比例') || 
+                    k.toLowerCase().includes('ratio') ||
+                    k.toLowerCase().includes('commission')
+                );
+                return fuzzyMatch || null;
+            }
+
+            // 直接读取分成比例原始值，不做任何转换
+            function getRawRatioValue(row, ratioKey) {
+                if (!ratioKey || !row.hasOwnProperty(ratioKey)) return null;
+                const val = row[ratioKey];
+                if (val === undefined || val === null || String(val).trim() === '') return null;
+                return String(val).trim();
             }
 
             function extractRatiosFromOrder(data) {
                 const ratios = new Set();
-                const skuMap = new Map();
-                if (!data || data.length === 0) return { ratios, skuMap };
-
-                const ratioKeys = ['分成比例', '分成', '比例', '佣金比例', 'commission_ratio', 'ratio'];
-                const skuKeys = ['商品ID', '商品id', 'SKU', 'sku', '商品编码'];
-
-                let ratioKey = null;
-                let skuKey = null;
-                if (data[0]) {
-                    for (const key of ratioKeys) {
-                        if (data[0].hasOwnProperty(key)) { ratioKey = key; break; }
-                    }
-                    for (const key of skuKeys) {
-                        if (data[0].hasOwnProperty(key)) { skuKey = key; break; }
-                    }
-                    if (!ratioKey) {
-                        const allKeys = Object.keys(data[0]);
-                        const found = allKeys.find(k => k.includes('比例') || k.toLowerCase().includes('ratio'));
-                        if (found) ratioKey = found;
-                    }
-                    if (!skuKey) {
-                        const allKeys = Object.keys(data[0]);
-                        const found = allKeys.find(k => k.includes('商品') || k.includes('SKU') || k.toLowerCase().includes('sku'));
-                        if (found) skuKey = found;
-                    }
+                if (!data || data.length === 0) return { ratios, ratioKey: null };
+                
+                const ratioKey = findRatioColumn(data);
+                if (!ratioKey) {
+                    console.warn('未找到分成比例列');
+                    return { ratios, ratioKey: null };
                 }
-
+                
                 data.forEach(row => {
-                    let ratioValue = null;
-                    if (ratioKey && row[ratioKey] !== undefined && row[ratioKey] !== null && String(row[ratioKey]).trim() !== '') {
-                        ratioValue = normalizePercentage(row[ratioKey]);
-                        if (ratioValue) {
-                            ratios.add(ratioValue);
-                        }
-                    }
-                    let skuVal = null;
-                    if (skuKey && row[skuKey] !== undefined && row[skuKey] !== null && String(row[skuKey]).trim() !== '') {
-                        skuVal = String(row[skuKey]).trim();
-                    }
-                    if (skuVal && ratioValue) {
-                        skuMap.set(skuVal, ratioValue);
+                    const val = getRawRatioValue(row, ratioKey);
+                    if (val) {
+                        ratios.add(val);
                     }
                 });
-                return { ratios, skuMap };
+                
+                console.log('找到分成比例列:', ratioKey);
+                console.log('所有比例值:', Array.from(ratios));
+                return { ratios, ratioKey };
             }
 
             function renderPromotionSelector() {
@@ -868,8 +856,9 @@
 
             function renderRatioSelector() {
                 const ratioArray = Array.from(availableRatios).sort((a,b) => {
-                    const numA = parseFloat(a);
-                    const numB = parseFloat(b);
+                    // 提取数字进行排序，但保留原始显示
+                    const numA = parseFloat(a.replace('%', '')) || 0;
+                    const numB = parseFloat(b.replace('%', '')) || 0;
                     return numA - numB;
                 });
                 if (ratioArray.length === 0) {
@@ -922,18 +911,21 @@
                 const val = String(row[key] || '').trim();
                 return selectedPromotions.has(val);
             }
+            
             function isCoopProduct(row) {
                 const productId = String(row['商品ID'] || row['商品id'] || row['SKU'] || row['sku'] || '').trim();
                 if (productId === '' || !skuSet.has(productId)) return false;
                 // 如果selectedRatios为空，表示不筛选比例，所有匹配SKU的都是合作品
                 if (selectedRatios.size === 0) return true;
-                const ratioStr = skuRatioMap.get(productId);
-                if (ratioStr === undefined) return true; // 没有比例信息的也归为合作品
+                // 直接读取该行的比例值
+                const ratioStr = getRawRatioValue(row, ratioKeyFound);
+                if (ratioStr === null) return true; // 没有比例信息的也归为合作品
                 return selectedRatios.has(ratioStr);
             }
-            function getRatioDisplay(productId) {
-                const ratioStr = skuRatioMap.get(productId);
-                return ratioStr === undefined ? '-' : ratioStr;
+            
+            function getRatioDisplay(row) {
+                const ratioStr = getRawRatioValue(row, ratioKeyFound);
+                return ratioStr === null ? '-' : ratioStr;
             }
 
             function updateCategorySalary(category, container) {
@@ -1039,11 +1031,10 @@
                                 </tr></thead>
                                 <tbody>`;
                     rows.forEach(r => {
-                        const ratioDisplay = getRatioDisplay(r.productId);
                         html += `<tr>
                             <td><code style="background:#f2f0eb;padding:2px 10px;border-radius:20px;">${escapeHtml(r.productId)}</code></td>
                             <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.productName)}">${escapeHtml(r.productName)}</td>
-                            <td>${escapeHtml(ratioDisplay)}</td>
+                            <td><strong>${escapeHtml(r.ratioDisplay)}</strong></td>
                             <td><strong>${fmt(r.sales)}</strong></td>
                             <td>${fmt(r.commission)}</td>
                             <td style="font-size:12px;color:#5f7080;">${escapeHtml(r.orderId)}</td>
@@ -1086,7 +1077,7 @@
                 selectedPromotions.clear();
                 availableRatios.clear();
                 selectedRatios.clear();
-                skuRatioMap.clear();
+                ratioKeyFound = null;
                 currentNonCoopTotalCommission = 0;
 
                 orderFileInput.value = '';
@@ -1133,13 +1124,17 @@
                     const productId = String(row['商品ID'] || row['商品id'] || row['SKU'] || row['sku'] || '').trim();
                     const sales = parseFloat(row['预估计佣金额']) || 0;
                     const commission = parseFloat(row['预估佣金']) || 0;
+                    const ratioDisplay = getRatioDisplay(row);
+                    
                     const item = {
                         productId: productId || '-',
                         productName: row['商品名称'] || '-',
                         orderId: row['订单号'] || '-',
                         sales: sales,
                         commission: commission,
+                        ratioDisplay: ratioDisplay
                     };
+                    
                     const isCoop = isCoopProduct(row);
                     if (isCoop) {
                         coopItems.push(item);
@@ -1168,9 +1163,9 @@
                 showLoading('分析数据中...');
                 await sleep(50);
                 try {
-                    const { ratios, skuMap } = extractRatiosFromOrder(orderData);
+                    const { ratios, ratioKey } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
-                    skuRatioMap = skuMap;
+                    ratioKeyFound = ratioKey;
                     // 默认不筛选比例，selectedRatios保持为空
                     selectedRatios.clear();
                     renderRatioSelector();
@@ -1204,6 +1199,7 @@
                     }
                     const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
                     console.log('解析订单成功，行数:', json.length);
+                    console.log('订单表列名:', Object.keys(json[0] || {}));
                     return json;
                 } catch (e) {
                     console.error('解析订单Excel失败:', e);
@@ -1245,12 +1241,14 @@
                     hideLoading();
                     orderFileStatus.textContent = `✅ ${orderData.length} 行`;
                     fileStatus.innerText = `📎 订单: ${file.name} (${orderData.length}行)`;
-                    const { ratios, skuMap } = extractRatiosFromOrder(orderData);
+                    
+                    const { ratios, ratioKey } = extractRatiosFromOrder(orderData);
                     availableRatios = ratios;
-                    skuRatioMap = skuMap;
+                    ratioKeyFound = ratioKey;
                     selectedRatios.clear();
                     renderPromotionSelector();
                     renderRatioSelector();
+                    
                     // 如果SKU已加载，自动分析
                     if (skuSet.size > 0) {
                         await analyze();
@@ -1275,6 +1273,7 @@
                     hideLoading();
                     skuFileStatus.textContent = `✅ ${skuSet.size} 个`;
                     fileStatus.innerText = `📎 SKU: ${file.name} (${skuSet.size}个)`;
+                    
                     // 如果订单已加载，自动分析
                     if (orderData.length > 0) {
                         await analyze();
@@ -1331,7 +1330,7 @@
             nonCoopMultiplierInput.addEventListener('input', updateNonCoopMultiplierResult);
 
             resetAll();
-            console.log('✅ SKU自动匹配 · 比例叠加筛选 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
+            console.log('✅ SKU自动匹配 · 比例原始显示 · 合作品按类倍率 · 非合作品总倍率 版本加载完成');
         })();
     </script>
 </body>
